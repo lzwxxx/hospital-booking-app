@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<head>
+<title>SMUHospital Appointment Booking System</title>
+
+<link rel="stylesheet" type="text/css" href="/assets/bootstrap/css/bootstrap.min.css">
+<style>
+    .btn2 {
+        background: #F05F40;
+        background: -moz-linear-gradient(left, #3996f4 0%, #5d5ffa 100%);
+        background: -webkit-linear-gradient(left, #F05F40 0%,#fa9e5d 100%);
+        background: linear-gradient(to right, #F05F40 0%, #fa9e5d 51%, #F05F40 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#F05F40', endColorstr='#fa9e5d',GradientType=1 );
+        background-size: 200% auto;
+        border: medium none;
+        border-radius: 3px;
+        box-shadow: 0 3px 20px rgba(0, 0, 0, 0.16);
+        color: #fff;
+        cursor: pointer;
+        display: inline-block;
+        font-size: 0.875em;
+        font-weight: 600;
+        letter-spacing: 1.25px;
+        line-height: 2em;
+        text-align: center;
+        text-transform: uppercase;
+        transform: scale(1);
+        transition: all 0.4s ease 0s;
+        font-family: 'Poppins', sans-serif;
+        text-decoration: none;
+        /* padding: .375rem .75rem; */
+    }
+
+    .btn2:hover {
+        background-position: right center;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .btn2:focus, .btn2:active {
+        color: #fff;
+        text-decoration: none;
+    }
+
+</style>
+
+<script src="/assets/jquery/jquery.min.js"></script>
+<script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <header>
+        <div class="header-area ">
+            <div id="sticky-header" class="main-header-area">
+                <div class="container">
+                    <div class="row justify-content-around">
+                        <div class="col-xl-12 col-lg-5">
+                            <div class="logo">
+                                <a href="http://localhost:3001/">
+                                    <img src="../assets/images/logo.png" alt="">
+                                    <!--<h1 style="color:black;">SMU Hospital Booking</h1>-->
+                                </a>
+                            </div>
+                        </div>     
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <br><br>
+    
+    <div class="container">
+        {% if error is defined %}
+        <div class="row justify-content-around">
+            <div class="col-md-12 col-lg-5 form-box mb-4">
+        <div class="alert alert-warning" role="alert">
+            Something went wrong: {{ error }}
+        </div>
+        {% endif %}
+        <!-- <h1>SMU Hospital</h1> -->
+        <h2>View Appointment History</h2>
+        <table class='table table-striped border-1'>
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Doctor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in appointments %}
+                <tr>
+                    <td>{{ appt['date'] }}</td>
+                    <td>{{ appt['time'] }}</td>
+                    <td>{{ appt['doctor_name'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        </div>
+    </div>
+
+</body>

@@ -1,0 +1,254 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Docmed</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- <link rel="manifest" href="site.webmanifest"> -->
+    <link rel="shortcut icon" type="image/x-icon" href="../assets/images/favicon.png">
+    <!-- Place favicon.ico in the root directory -->
+
+    <!-- CSS here -->
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/magnific-popup.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/themify-icons.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/nice-select.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/flaticon.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/gijgo.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/animate.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/slicknav.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/style.css">
+
+    <!--<script src="../assets/jquery/jquery.min.js"></script>-->
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+
+    <script>
+        $(function () {
+            //Generate overall chart 
+            $.ajax({
+                type: "GET",
+                url: '/get_overall_chart',
+                success: function (data) {
+
+                    //console.log(data)
+
+                    var array = data["data"]["average_patients"]
+                    //console.log(array)
+
+                    var values = []
+                    var labels = []
+
+                    var arrayLength = array.length;
+                    //console.log(arrayLength)
+
+                    for (var i = 0; i < arrayLength; i++) {
+                        values.push(array[i]["average_num_patients"])
+                        labels.push(array[i]["hour"])
+                    }
+
+                    var ctx = document.getElementById('myChart');
+
+                    var backgroundColor = []
+
+                    for (var j = 0; j < arrayLength; j++) {
+                        backgroundColor.push("rgba(54, 162, 235, 0.2)")
+                    }
+
+                    var borderColor = []
+
+                    for (var k = 0; k < arrayLength; k++) {
+                        borderColor.push("rgba(54, 162, 235, 1)")
+                    }
+
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Average Number of Patients',
+                                data: values,
+                                backgroundColor: backgroundColor,
+                                borderColor: borderColor,
+                                borderWidth: 1
+                            }]
+                        },
+                        //Controlling the width and height of the chart 
+                        options: {
+                            maintainAspectRatio: false,
+                            responsive: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Average Number of Patients Per Hour',
+                                    font: {
+                                        size: 17
+                                    }
+                                },
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    display: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Average Number of Patients'
+                                    }
+                                },
+                                x: {
+                                    display: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Hours'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+
+            //click on add button 
+            $('#add').on('click', function () {
+                window.location.replace(window.location.href + 'add_doc_form')
+            });
+
+            //click on edit button 
+            let editList = document.getElementsByClassName("edit");
+            for (var i = 0; i < editList.length; i++) {
+                editList[i].addEventListener("click", function (item) {
+                    //console.log(item.target.value);
+                    window.location.replace(window.location.href + "edit_doctor/" + item.target.value)
+                });
+            }
+
+
+        })
+
+    </script>
+
+</head>
+
+<body>
+    <!--[if lte IE 9]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+        <![endif]-->
+
+    <!-- header-start -->
+
+    <!--<div id="test"></div>-->
+
+    <header>
+        <div class="header-area ">
+            <div id="sticky-header" class="main-header-area">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-3">
+                            <div class="logo">
+                                <!-- NEED TO CHANGE THE A TAG LINK -->
+                                <a href="http://localhost:3002/">
+                                    <img src="../assets/images/logo.png" alt="">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-9">
+                            <div class="logout text-right">
+                                <a href="http://localhost:3002/logout">
+                                    <img src="../assets/images/logout.png" width="20" height="20" alt="">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- header-end -->
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm">
+                <canvas id="myChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+        <br><br>
+        <div class="row">
+            <div class="col-7">
+                <h3 class="text-right">Our Doctors</h3>
+            </div>
+            <div class="col-5 text-right">
+                <button type="button" class="btn btn-primary" id="add">Add</button>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <table class='table table-striped border-1'>
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Working Hour (Start Time)</th>
+                        <th>Working Hour (End Time)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for info in doctors_info %}
+                    <tr>
+                        <td>{{ info['doctor_id'] }}</td>
+                        <td>{{ info['doctor_name'] }}</td>
+                        <td>{{ info['doctor_sex'] }}</td>
+                        <td>{{ info['start_time'] }}</td>
+                        <td>{{ info['end_time'] }}</td>
+                        <td><button type="button" class="btn btn-primary edit"
+                                value="{{ info['doctor_id'] }}">Edit</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    </div>
+
+    <br>
+
+
+    <!-- JS here-->
+    <!--<script src="../assets/bootstrap/js/vendor/modernizr-3.5.0.min.js"></script>
+    <script src="../assets/bootstrap/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="../assets/bootstrap/js/popper.min.js"></script>
+    <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../assets/bootstrap/js/owl.carousel.min.js"></script>
+    <script src="../assets/bootstrap/js/isotope.pkgd.min.js"></script>
+    <script src="../assets/bootstrap/js/ajax-form.js"></script>
+    <script src="../assets/bootstrap/js/waypoints.min.js"></script>
+    <script src="../assets/bootstrap/js/jquery.counterup.min.js"></script>
+    <script src="../assets/bootstrap/js/imagesloaded.pkgd.min.js"></script>
+    <script src="../assets/bootstrap/js/scrollIt.js"></script>
+    <script src="../assets/bootstrap/js/jquery.scrollUp.min.js"></script>
+    <script src="../assets/bootstrap/js/wow.min.js"></script>
+    <script src="../assets/bootstrap/js/nice-select.min.js"></script>
+    <script src="../assets/bootstrap/js/jquery.slicknav.min.js"></script>
+    <script src="../assets/bootstrap/js/jquery.magnific-popup.min.js"></script>
+    <script src="../assets/bootstrap/js/plugins.js"></script>
+    <script src="../assets/bootstrap/js/gijgo.min.js"></script> -->
+
+    <!--Chart.js-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+
+</html>

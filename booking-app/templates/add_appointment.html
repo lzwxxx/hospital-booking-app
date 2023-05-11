@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<head>
+<title>SMUHospital Appointment Booking System</title>
+
+<link rel="stylesheet" type="text/css" href="/assets/bootstrap/css/bootstrap.min.css">
+<style>
+    .btn2 {
+        background: #F05F40;
+        background: -moz-linear-gradient(left, #3996f4 0%, #5d5ffa 100%);
+        background: -webkit-linear-gradient(left, #F05F40 0%,#fa9e5d 100%);
+        background: linear-gradient(to right, #F05F40 0%, #fa9e5d 51%, #F05F40 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#F05F40', endColorstr='#fa9e5d',GradientType=1 );
+        background-size: 200% auto;
+        border: medium none;
+        border-radius: 3px;
+        box-shadow: 0 3px 20px rgba(0, 0, 0, 0.16);
+        color: #fff;
+        cursor: pointer;
+        display: inline-block;
+        font-size: 0.875em;
+        font-weight: 600;
+        letter-spacing: 1.25px;
+        line-height: 2em;
+        text-align: center;
+        text-transform: uppercase;
+        transform: scale(1);
+        transition: all 0.4s ease 0s;
+        font-family: 'Poppins', sans-serif;
+        text-decoration: none;
+        /* padding: .375rem .75rem; */
+    }
+
+    .btn2:hover {
+        background-position: right center;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .btn2:focus, .btn2:active {
+        color: #fff;
+        text-decoration: none;
+    }
+
+</style>
+
+<script src="/assets/jquery/jquery.min.js"></script>
+<script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+
+<script>
+    // Singpass functions
+
+    // Variables for API #1 - Authorise API
+    var authApiUrl; // URL for authorise API
+    var clientId; // your app_id/client_id provided to you during onboarding
+    var redirectUrl; //callback url for your application
+
+    var attributes; // the attributes you are retrieving for your application to fill the form
+    var authLevel; // the auth level, determines the flow
+    // the purpose of your data retrieval
+    var purpose = "Registration Info for Appointment Booking";
+
+    clientId = '{{ api.clientId }}';
+    redirectUrl = '{{ api.redirectUrl }}';
+    authApiUrl = '{{ api.authApiUrl }}';
+    attributes = '{{ api.attributes }}';
+    authLevel = '{{ api.authLevel }}';
+
+    var state = '{{ state }}'
+
+    // Function for calling API #1 - Authorise
+    function callAuthoriseApi() {
+        console.log('api');
+        var authoriseUrl = authApiUrl + "?client_id=" + clientId +
+            "&attributes=" + attributes +
+            "&purpose=" + purpose +
+            "&state=" + encodeURIComponent(state)  +
+            "&redirect_uri=" + redirectUrl;
+        
+        // console.log(authoriseUrl)
+        window.location = authoriseUrl;
+    }
+
+    // End singpass functions
+
+</script>
+
+<script>
+// update doctor timeslots
+
+function format_time(time){
+    if(time == 0){
+        return "12 am"
+    }
+    else if(time < 12){
+        return time+" am"
+    }
+    else if(time == 12){
+        return "12 pm"
+    }
+    else{
+        return (time-12)+" pm"
+    }
+}
+
+$(function(){
+    // update doctor timeslots
+    $('#doctor_id').on('change', function() {
+      var doctor_id = $("option:selected", this).prop("value");
+      console.log(doctor_id)
+      $.ajax({
+          type    : "GET",
+          url       : '/doctor_timeslots/'+doctor_id,
+          success : function(data) {
+            console.log(data)
+            $('#time').empty();
+            data = data.data
+            $.each(data, function(index, item) {
+                $('#time').append($('<option/>', {
+                    value: item,
+                    text: format_time(item)
+                }));
+                
+            });
+
+          }
+      });
+    });
+
+    //submit form
+    function convertFormToJSON(form) {
+        const array = form.serializeArray(); // Encodes the set of form elements as an array of names and values.
+        const json = {};
+        $.each(array, function () {
+            json[this.name] = this.value || "";
+        });
+        return json;
+    }
+
+    $("#bookAppointment").submit(function(e) {
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+
+        var form = $(this);
+        var actionUrl = form.attr('action');
+
+        var payload = convertFormToJSON(form)
+        console.log(payload)
+
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: "/book_appointment",
+            data: JSON.stringify(payload), // serializes the form's elements.
+            dataType: "json",
+            contentType: "application/json",
+            success: function(data)
+            {
+                console.log(data)
+                $('#exampleModal').modal({
+                    show: true
+                }); 
+                $("#exampleModalLabel").text("Your Appointment has been booked!"); 
+                $(".modal-body").text("An email with your appointment details has been sent out."); 
+            },
+            error: function (error) {
+                console.log(error)
+                $('#exampleModal').modal({
+                    show: true
+                }); 
+                $("#exampleModalLabel").text("Failed to book Appointment"); 
+                $(".modal-body").text("Response from server: "+error.responseJSON.message); 
+            }
+        });
+    });
+
+})
+
+
+</script>
+
+</head>
+<body>
+    {% if error is defined %}
+    <div class="alert alert-warning" role="alert">
+        Something went wrong: {{ error }}
+    </div>
+    {% endif %}
+    <!-- header-start -->
+    <header>
+        <div class="header-area ">
+            <div id="sticky-header" class="main-header-area">
+                <div class="container">
+                    <div class="row justify-content-around">
+                        <div class="col-xl-5 col-lg-5">
+                            <div class="logo">
+                                <a href="http://localhost:3001/">
+                                    <img src="../assets/images/logo.png" alt="">
+                                    <!--<h1 style="color:black;">SMU Hospital Booking</h1>-->
+                                </a>
+                            </div>
+                        </div>     
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- header-end -->
+
+    
+
+
+    <div class="container">
+        <h3 class="text-center">Book an Appointment</h3>
+        <form id="bookAppointment">
+                <div class="row justify-content-around">
+                    <div class="col-md-12 col-lg-5 form-box mb-4">
+                        <button type="button" onclick="callAuthoriseApi()" class="btn2">
+                            Retrieve with Singpass MyInfo
+                        </button>
+                        <br><br>
+                        <div class="form-group">
+                            {% if prefill is defined %}
+                                <div class="row">
+                                    <div class="input-group">
+                                        <label for="nric" class="form-label">NRIC:</label>
+                                        <input type = 'text' id = 'nric' name = 'nric' value='{{ prefill.nric }}' class="form-control" readonly required>
+                                    </div>
+                                </div>
+                                <br>    
+                                <div class="row">
+                                    <div class="input-group">
+                                        <label for="name" class="form-label">Name:</label>
+                                        <input type = 'text' id = 'name' name = 'name' value='{{ prefill.name }}' class="form-control" readonly required>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="input-group">
+                                        <label for="sex" class="form-label">Sex:</label>
+                                        <select id = 'sex' name = 'sex' class="form-control" readonly required>
+                                            {% if prefill.sex == 'M' %}
+                                                <option value = 'M' selected>M</option>
+                                                <option value = 'F' disabled>F</option>
+                                            {% else %}
+                                                <option value = 'M' disabled>M</option>
+                                                <option value = 'F' selected>F</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="row">
+                                    <div class="input-group">
+                                        <label for="nric" class="form-label">NRIC:</label>
+                                        <input type = 'text' id = 'nric' name = 'nric' value='' class="form-control" readonly required>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="input-group">
+                                        <label for="name" class="form-label">Name:</label>
+                                        <input type = 'text' id = 'name' name = 'name' value='' class="form-control" readonly required>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="input-group">
+                                        <label for="sex" class="form-label">Sex:</label>
+                                        <select id = 'sex' name = 'sex' class="form-control" readonly required>
+                                            <option value = 'M' disabled>M</option>
+                                            <option value = 'F' disabled>F</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <br>
+                            <div class="row">
+                                <div class="input-group">
+                                    <label for="email" class="form-label">Email:</label>
+                                    <input type = 'text' id = 'email' name = 'email' value='' class="form-control" required>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="input-group">
+                                    <label for="date" class="form-label">Date:</label>
+                                    <input id='date' type = 'date' name = 'date' value='' class="form-control" required>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="input-group">
+                                    <label for="doctor_id" class="form-label">Select a Doctor:</label>
+                                    <select  id = 'doctor_id' name = 'doctor_id' class="form-select" required>
+                                        <option value="" disabled selected hidden>Select a Doctor</option>
+                                        {% for doc in doctors %}
+                                        <option value="{{ doc['doctor_id'] }}">{{ doc['doctor_name' ]}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="input-group">
+                                    <label for="time" class="form-label">Select a Timeslot:</label>
+                                    <select  id = 'time' name = 'time' class="form-select" required>
+                                        <option value="" disabled selected hidden>Select a timeslot</option>
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                            <br><br>
+                            <input type="submit" class="btn btn-info" value="Book Appointment">
+                        </div>
+                    </div>
+                </div>
+            
+        </form>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+
+    <script>
+        // Disable weekend selection
+        const picker = document.getElementById('date');
+        picker.addEventListener('input', function(e){
+        var day = new Date(this.value).getUTCDay();
+        if([6,0].includes(day)){
+            e.preventDefault();
+            this.value = '';
+            alert('Sorry, we are closed on weekends. Please choose a weekday');
+        }
+        });
+
+    </script>
+</body>

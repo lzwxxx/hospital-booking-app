@@ -1,0 +1,43 @@
+_format_version: "1.1"
+services:
+- url: http://appointment-booking:5001
+  name: appointment-booking
+#  plugins:
+#  - name: key-auth
+  routes:
+  - name: appointment-booking
+    paths:
+    - /appointment-booking/v1/
+- url: http://appointment:5001
+  name: appointment
+#  plugins:
+#  - name: key-auth
+  routes:
+  - name: appointment
+    paths:
+    - /appointment/v1/
+- url: http://patient:5001
+  name: patient
+#  plugins:
+#  - name: key-auth
+  routes:
+  - name: patient
+    paths:
+    - /patient/v1/
+- url: http://doctor:5001
+  name: doctor
+#  plugins:
+#  - name: key-auth
+  routes:
+  - name: doctor
+    paths:
+    - /doctor/v1/
+- url: http://analytics:5001
+  name: analytics
+#  plugins:
+#  - name: key-auth
+  routes:
+  - name: analytics
+    paths:
+    - /analytics/v1/
+

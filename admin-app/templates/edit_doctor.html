@@ -1,0 +1,230 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Docmed</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- <link rel="manifest" href="site.webmanifest"> -->
+    <link rel="shortcut icon" type="image/x-icon" href="../assets/images/favicon.png">
+    <!-- Place favicon.ico in the root directory -->
+
+    <!-- CSS here -->
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/magnific-popup.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/themify-icons.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/nice-select.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/flaticon.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/gijgo.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/animate.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/slicknav.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/style.css">
+
+    <!--<script src="../assets/jquery/jquery.min.js"></script>-->
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+
+    <script>
+        $(function () {
+            function convertFormToJSON(form) {
+                doctor_name = document.getElementById("doctor_name").value;
+                doctor_nric = document.getElementById("doctor_nric").value;
+                doctor_sex = $(":radio[name=doctor_sex]:checked").val();
+                start_time = document.getElementById("start_time").value;
+                end_time = document.getElementById("end_time").value;
+
+                start_time = parseInt(start_time)
+                end_time = parseInt(end_time)
+
+                let json = JSON.parse('{"doctor_name": "' + doctor_name + '", "doctor_nric": "' + doctor_nric + '", "doctor_sex":"' + doctor_sex + '", "start_time":' + start_time + ', "end_time":' + end_time + '}')
+                return json;
+            }
+
+            $("#edit").submit(function (e) {
+                e.preventDefault();  // avoid to execute the actual submit of the form
+                var form = $(this);
+                var actionUrl = form.attr('action');
+
+                var payload = convertFormToJSON(form)
+                console.log(payload)
+
+                current_location = window.location.href
+                //console.log(current_location)
+                position = current_location.lastIndexOf("/")
+                //console.log(position)
+                doctor_id = current_location.substring(position + 1)
+                //console.log(typeof(doctor_id))
+
+                $.ajax({
+                    type: "PUT",
+                    cache: false,
+                    url: "/update_doctor/" + doctor_id,
+                    data: JSON.stringify(payload), // serializes the form's elements.
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        console.log(data)
+                        $('#exampleModal').modal({
+                            show: true
+                        });
+                        $("#exampleModalLabel").text("Update Doctor Information Successfully");
+                      
+                        $(".modal-body").text("The information of the doctor has been updated successfully");
+
+                        $(".close").click(function () {
+                            $('#exampleModal').modal('hide')
+                        })
+
+                        $('#exampleModal').on('hidden.bs.modal', function (e) {
+                            current_location = window.location.href
+                            //console.log(current_location)
+                            position = current_location.lastIndexOf("/")
+                            //console.log(position)
+                            redirect_location = current_location.substring(0, position -11)
+                            //console.log(redirect_location)
+                            window.location.replace(redirect_location)
+                        })
+                    },
+                    error: function (error) {
+                        console.log(error)
+                        $('#exampleModal').modal({
+                            show: true
+                        });
+                        $("#exampleModalLabel").text("Update Doctor Information Unsuccessfully");
+                        $(".modal-body").text("Not able to update doctor details");
+                    }
+                });
+            })
+        })
+    </script>
+
+</head>
+
+<body>
+    <!--[if lte IE 9]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+        <![endif]-->
+
+    <!-- header-start -->
+    <header>
+        <div class="header-area ">
+            <div id="sticky-header" class="main-header-area">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-xl-3 col-lg-2">
+                            <div class="logo">
+                                <!-- NEED TO CHANGE THE A TAG LINK -->
+                                <a href="http://localhost:3002/">
+                                    <img src="../assets/images/logo.png" alt="">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- header-end -->
+    <br>
+    <div class="container">
+        <h3 class="text-center">Edit Doctor</h3>
+
+        <div class="row">
+            <div class="col-sm form-group form-check form-check-inline">
+                <form id="edit">
+                    <label>Doctor's Name:</label>
+                    <input type="text" class="form-control" id="doctor_name" value="{{ doctor['doctor_name'] }}" required>
+
+                    <br>
+
+                    <label>Doctor's NRIC:</label>
+                    <input type="text" class="form-control" id="doctor_nric" value="{{ doctor['doctor_nric'] }}" required>
+
+                    <br>
+
+                    <label>Gender:</label>
+                    <input type="radio" name="doctor_sex" class="doctor_sex" value="F"
+                        style="margin-left: 20px; font-size: 14px; font-weight: 400;" {% if doctor.doctor_sex=='F' %}
+                        checked {% endif %} required>
+                    Female
+                    <input type="radio" name="doctor_sex" class="doctor_sex" value="M"
+                        style="margin-left: 20px; font-size: 14px; font-weight: 400;" {% if doctor.doctor_sex=='M' %}
+                        checked {% endif %} required>
+                    Male
+
+                    <br>
+
+                    <label>Working Hours - Start Time:</label>
+                    <select  id = 'start_time' name = 'start_time' class="form-control" required>
+                        <option value="" disabled selected hidden>Select a timeslot (in 24hrs format)</option> 
+                        {% for i in range(0,24) %}
+                            <option value="{{i}}">{{i}}</option> 
+                        {% endfor %}
+                    </select>
+
+                    <br>
+
+                    <label>Working Hours - End Time:</label>
+                    <select  id = 'end_time' name = 'end_time' class="form-control" required>
+                        <option value="" disabled selected hidden>Select a timeslot (in 24hrs format)</option> 
+                        {% for i in range(0,24) %}
+                            <option value="{{i}}">{{i}}</option> 
+                        {% endfor %}
+                    </select>
+
+                    <br>
+                    <input type="submit" class="col-12 boxed-btn3 btn btn-primary" id="edit"
+                        value="Edit Doctor Details">
+                </form>
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="close btn btn-secondary"
+                                    data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <!-- JS here -->
+            <!--<script src="../assets/bootstrap/js/vendor/modernizr-3.5.0.min.js"></script>
+            <script src="../assets/bootstrap/js/vendor/jquery-1.12.4.min.js"></script>
+            <script src="../assets/bootstrap/js/popper.min.js"></script>-->
+            <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+            <!--<script src="../assets/bootstrap/js/owl.carousel.min.js"></script>
+            <script src="../assets/bootstrap/js/isotope.pkgd.min.js"></script>
+            <script src="../assets/bootstrap/js/ajax-form.js"></script>
+            <script src="../assets/bootstrap/js/waypoints.min.js"></script>
+            <script src="../assets/bootstrap/js/jquery.counterup.min.js"></script>
+            <script src="../assets/bootstrap/js/imagesloaded.pkgd.min.js"></script>
+            <script src="../assets/bootstrap/js/scrollIt.js"></script>
+            <script src="../assets/bootstrap/js/jquery.scrollUp.min.js"></script>
+            <script src="../assets/bootstrap/js/wow.min.js"></script>
+            <script src="../assets/bootstrap/js/nice-select.min.js"></script>
+            <script src="../assets/bootstrap/js/jquery.slicknav.min.js"></script>
+            <script src="../assets/bootstrap/js/jquery.magnific-popup.min.js"></script>
+            <script src="../assets/bootstrap/js/plugins.js"></script>
+            <script src="../assets/bootstrap/js/gijgo.min.js"></script>-->
+</body>
+
+</html>

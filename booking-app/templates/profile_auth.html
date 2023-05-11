@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<head>
+<title>SMUHospital Appointment Booking System</title>
+
+<link rel="stylesheet" type="text/css" href="/assets/bootstrap/css/bootstrap.min.css">
+<style>
+    .btn2 {
+        background: #F05F40;
+        background: -moz-linear-gradient(left, #3996f4 0%, #5d5ffa 100%);
+        background: -webkit-linear-gradient(left, #F05F40 0%,#fa9e5d 100%);
+        background: linear-gradient(to right, #F05F40 0%, #fa9e5d 51%, #F05F40 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#F05F40', endColorstr='#fa9e5d',GradientType=1 );
+        background-size: 200% auto;
+        border: medium none;
+        border-radius: 3px;
+        box-shadow: 0 3px 20px rgba(0, 0, 0, 0.16);
+        color: #fff;
+        cursor: pointer;
+        display: inline-block;
+        font-size: 0.875em;
+        font-weight: 600;
+        letter-spacing: 1.25px;
+        line-height: 2em;
+        text-align: center;
+        text-transform: uppercase;
+        transform: scale(1);
+        transition: all 0.4s ease 0s;
+        font-family: 'Poppins', sans-serif;
+        text-decoration: none;
+        /* padding: .375rem .75rem; */
+    }
+
+    .btn2:hover {
+        background-position: right center;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .btn2:focus, .btn2:active {
+        color: #fff;
+        text-decoration: none;
+    }
+
+</style>
+
+<script src="/assets/jquery/jquery.min.js"></script>
+<script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+
+<script>
+    // Singpass functions
+
+    // Variables for API #1 - Authorise API
+    var authApiUrl; // URL for authorise API
+    var clientId; // your app_id/client_id provided to you during onboarding
+    var redirectUrl; //callback url for your application
+
+    var attributes; // the attributes you are retrieving for your application to fill the form
+    var authLevel; // the auth level, determines the flow
+    // the purpose of your data retrieval
+    var purpose = "Verifying NRIC for profile access";
+
+    clientId = '{{ api.clientId }}';
+    redirectUrl = '{{ api.redirectUrl }}';
+    authApiUrl = '{{ api.authApiUrl }}';
+    attributes = '{{ api.attributes }}';
+    authLevel = '{{ api.authLevel }}';
+
+    var state = '{{ state }}' 
+
+    // Function for calling API #1 - Authorise
+    function callAuthoriseApi() {
+        console.log('api');
+        var authoriseUrl = authApiUrl + "?client_id=" + clientId +
+            "&attributes=" + attributes +
+            "&purpose=" + purpose +
+            "&state=" + encodeURIComponent(state)  +
+            "&redirect_uri=" + redirectUrl;
+        
+        // console.log(authoriseUrl)
+        window.location = authoriseUrl;
+    }
+
+    // End singpass functions
+
+</script>
+
+</head>
+<body>
+    <header>
+        <div class="header-area ">
+            <div id="sticky-header" class="main-header-area">
+                <div class="container">
+                    <div class="row justify-content-around">
+                        <div class="col-xl-12 col-lg-5">
+                            <div class="logo">
+                                <a href="http://localhost:3001/">
+                                    <img src="../assets/images/logo.png" alt="">
+                                    <!--<h1 style="color:black;">SMU Hospital Booking</h1>-->
+                                </a>
+                            </div>
+                        </div>     
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <br><br>
+
+    {% if error is defined %}
+    <div class="alert alert-warning" role="alert">
+        Something went wrong: {{ error }}
+    </div>
+    {% endif %}
+    <div class="container">
+        <div class="row justify-content-around">
+            <div class="col-md-12 col-lg-5 form-box mb-4">
+            <h2>View Appointment History</h2>
+            
+            <label>Please verify identify using Singpass to proceed.</label>
+            <br>
+            <button onclick="callAuthoriseApi()" class="btn2">
+                Verify NRIC with Singpass MyInfo
+            </button>
+            </div>
+        </div>
+    </div>
+
+</body>

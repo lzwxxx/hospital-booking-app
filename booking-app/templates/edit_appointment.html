@@ -1,0 +1,351 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+    <title>SMUHospital Appointment Booking System</title>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- <link rel="manifest" href="site.webmanifest"> -->
+    <link rel="shortcut icon" type="image/x-icon" href="../assets/images/favicon.png">
+    <!-- Place favicon.ico in the root directory -->
+
+    <!-- CSS here -->
+    <link rel="stylesheet" type="text/css" href="/assets/bootstrap/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="../assets/bootstrap/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/magnific-popup.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/themify-icons.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/nice-select.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/flaticon.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/gijgo.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/animate.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/slicknav.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/style.css"> -->
+    <!-- <link rel="stylesheet" href="css/responsive.css"> -->
+</head>
+
+<body>
+    <!-- header-start -->
+    <header>
+        <div class="header-area ">
+            <div id="sticky-header" class="main-header-area">
+                <div class="container">
+                    <div class="row justify-content-around">
+                        <div class="col-xl-5 col-lg-5">
+                            <div class="logo">
+                                <a href="http://localhost:3001/">
+                                    <img src="../assets/images/logo.png" alt="">
+                                    <!-- <h1 style="color:black;">SMU Hospital Booking</h1> -->
+                                </a>
+                            </div>
+                        </div>     
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- header-end -->
+    <br>
+    <div class="container">
+        <h3 class="text-center">Edit Appointment</h3>
+        <div class="row justify-content-around">
+            <div class="col-md-12 col-lg-5 form-box mb-4">
+            <form id="editAppointment">
+                <br>
+                        <div class="row">
+                            <div class="input-group">
+                                <label for="date" class="form-label">Select a Date:</label>
+                                <input id='date' type = 'date' name ='date' class="form-control" value="{{ appointment['date'] }}" required>
+                            </div>
+                        </div>
+                <br>
+                    <div class="row">
+                    <div class="input-group">
+                        <label for="doctor_id" class="form-label">Select a Doctor:</label>
+                        <select class="form-control" id = 'doctor_id' name = 'doctor_id' required>
+                            {% for doc in doctors %}
+                                {% if doc['doctor_id'] == appointment['doctor_id'] %}
+                                <option value="{{ doc['doctor_id'] }}" selected>{{ doc['doctor_name' ]}}</option>
+
+                                {% else %}
+                                <option value="{{ doc['doctor_id'] }}">{{ doc['doctor_name' ]}}</option>
+
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    </div>
+                    <br>
+                     <div class="row">
+                     <div class="input-group">
+                        <label for="time" class="form-label">Select a Timeslot:</label>
+                        <select  id = 'time' name = 'time' class="form-control" required>
+                            <option value="" disabled selected hidden>Select a timeslot</option> 
+                            {% if select != "" %}
+                                {{select|safe}}
+                                {% set select = "" %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    </div>
+                     <br><br>
+                    <div class="row">
+                        <button type="submit" class="col-12 btn btn-primary">Confirm Appointment</button>
+                    </div>
+            </form>
+            <br><br>
+            <div class="row">
+            <canvas id="myChart" height="600" width="800"></canvas>
+            </div>
+                </div>
+            </div>
+            <br>
+        </div>
+    <br>
+
+     <!-- Modal -->
+     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    <!-- JS here -->
+    <!-- <script src="../assets/bootstrap/js/vendor/modernizr-3.5.0.min.js"></script>
+    <script src="../assets/bootstrap/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="../assets/bootstrap/js/popper.min.js"></script> -->
+    <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+    <!-- <script src="../assets/bootstrap/js/owl.carousel.min.js"></script>
+    <script src="../assets/bootstrap/js/isotope.pkgd.min.js"></script> -->
+    <!-- <script src="../assets/bootstrap/js/ajax-form.js"></script> -->
+    <!-- <script src="../assets/bootstrap/js/waypoints.min.js"></script>
+    <script src="../assets/bootstrap/js/jquery.counterup.min.js"></script>
+    <script src="../assets/bootstrap/js/imagesloaded.pkgd.min.js"></script>
+    <script src="../assets/bootstrap/js/scrollIt.js"></script>
+    <script src="../assets/bootstrap/js/jquery.scrollUp.min.js"></script>
+    <script src="../assets/bootstrap/js/wow.min.js"></script>
+    <script src="../assets/bootstrap/js/nice-select.min.js"></script>
+    <script src="../assets/bootstrap/js/jquery.slicknav.min.js"></script>
+    <script src="../assets/bootstrap/js/jquery.magnific-popup.min.js"></script>
+    <script src="../assets/bootstrap/js/plugins.js"></script>
+    <script src="../assets/bootstrap/js/gijgo.min.js"></script> -->
+    <script src="/assets/jquery/jquery.min.js"></script>
+    <!--contact js-->
+    <!-- <script src="../assets/bootstrap/js/contact.js"></script> -->
+    <!-- <script src="../assets/bootstrap/js/jquery.ajaxchimp.min.js"></script>
+    <script src="../assets/bootstrap/js/jquery.form.js"></script>
+    <script src="../assets/bootstrap/js/jquery.validate.min.js"></script>
+    <script src="../assets/bootstrap/js/mail-script.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <!-- <script src="../assets/bootstrap/js/main.js"></script> -->
+    <script>
+        const picker = document.getElementById('date');
+        picker.addEventListener('input', function(e){
+        var day = new Date(this.value).getUTCDay();
+        if([6,0].includes(day)){
+            e.preventDefault();
+            this.value = '';
+            alert('Sorry, we are closed on weekends. Please choose a weekday');
+        }
+        });
+
+        $(function(){
+            $.ajax({
+                type: "GET",
+                url: '/get_analytics',
+                success: function(data) {
+
+                    //console.log(data)
+
+                    var array = data["average_patients"]
+                    // console.log(array)
+
+                    var values = []
+                    var labels = [] 
+
+                    var arrayLength = array.length;
+                    // console.log(arrayLength)
+
+                    for (var i = 0; i < arrayLength; i++){
+                        values.push(array[i]["average_num_patients"])
+                        // console.log(array[i]["average_num_patients"])
+                        // console.log(array[i]["hour"])
+                        labels.push(array[i]["hour"])
+                    }
+
+                    var ctx = document.getElementById('myChart');
+                    ctx.height = 300;
+
+                    var backgroundColor = [] 
+
+                    for (var j = 0; j < arrayLength; j++){
+                        backgroundColor.push("rgba(54, 162, 235, 0.2)")
+                    }
+
+                    var borderColor = []
+
+                    for (var k = 0; k < arrayLength; k++){
+                        borderColor.push("rgba(54, 162, 235, 1)")
+                    }
+
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Average Number of Patients',
+                                data: values,
+                                backgroundColor: backgroundColor,
+                                borderColor: borderColor, 
+                                borderWidth: 1
+                            }]
+                        },
+                        //Controlling the width and height of the chart 
+                        options: {
+                            maintainAspectRatio: false,
+                            responsive: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Average Number of Patients Per Hour'
+                                },
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            },
+                            scales:{
+                                y: {
+                                    display: true, 
+                                    title: {
+                                        display: true,
+                                        text: 'Average Number of Patients'
+                                    }, 
+                                    gridLines: {
+                                        color: "rgba(0, 0, 0, 0)",
+                                    } 
+                                },
+                                x: {
+                                    display: true, 
+                                    title: {
+                                        display: true,
+                                        text: 'Hours'
+                                    }, 
+                                    gridLines: {
+                                        color: "rgba(0, 0, 0, 0)",
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+        })
+
+        $(function(){
+            // update doctor timeslots
+            $('#doctor_id').on('change', function() {
+            var doctor_id = $("option:selected", this).prop("value");
+            console.log(doctor_id)
+            $.ajax({
+                type: "GET",
+                url: '/doctor_timeslots/'+doctor_id,
+                success : function(data) {
+                    // console.log(data)
+                    $('#time').empty();
+                    data = data.data
+                    $.each(data, function(index, item) {
+                        $('#time').append($('<option/>', {
+                            value: item,
+                            text: format_time(item)
+                        }));
+                        
+                    });
+
+                }
+            });
+            });
+        })
+
+        function format_time(time){     
+            if(time == 0){
+                return "12 am"
+            }
+            else if(time < 12){
+                return time+" am"
+            }
+            else if(time == 12){
+                return "12 pm"
+            }
+            else{
+                return (time-12)+" pm"
+            }
+        }
+
+        function convertFormToJSON(form) {
+            const array = form.serializeArray(); // Encodes the set of form elements as an array of names and values.
+            const json = {};
+            $.each(array, function () {
+                json[this.name] = this.value || "";
+            });
+            return json;
+        }
+
+        $("#editAppointment").submit(function(e) {
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+
+         var form = $(this);
+        var actionUrl = form.attr('action');
+
+        var payload = convertFormToJSON(form)
+        payload["appointment_id"] = '{{ appointment_id }}'
+        console.log(payload)
+
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: "/submit_editAppointment",
+            data: JSON.stringify(payload), // serializes the form's elements.
+            dataType: "json",
+            contentType: "application/json",
+            success: function(data)
+            {
+                console.log(data)
+                $('#exampleModal').modal({
+                    show: true
+                }); 
+                $("#exampleModalLabel").text("Your Appointment has been booked!"); 
+                $(".modal-body").text("An email with your appointment details has been sent out."); 
+            },
+            error: function (error) {
+                console.log(error)
+                $('#exampleModal').modal({
+                    show: true
+                }); 
+                $("#exampleModalLabel").text("Failed to book Appointment"); 
+                $(".modal-body").text("Response from server: "+error.responseJSON.message); 
+            }
+        });
+    });
+
+        
+    </script>
+</body>
+
+</html>

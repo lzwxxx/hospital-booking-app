@@ -1,0 +1,235 @@
+version: "3.8"
+
+volumes:
+  rabbitmq_data:
+
+services:
+  #==================================================================#
+  #                      UI FRONTEND APPLICATIONS                    #
+  #==================================================================#
+  ####################################
+  # Booking App UI
+  ####################################
+  booking-app: 
+    build: 
+      context: ./booking-app
+      dockerfile: Dockerfile
+    image: esdg2t5/booking-app:1.0
+    depends_on:
+      - kong
+      - appointment-booking
+      - appointment
+      - doctor
+      - patient
+      - analytics
+    environment: 
+      - PYTHONUNBUFFERED=1
+      - SINGPASS_AUTHLEVEL=L0
+      - SINGPASS_AUTH_API_URL=https://sandbox.api.myinfo.gov.sg/com/v3/authorise
+      - SINGPASS_TOKEN_API_URL=https://sandbox.api.myinfo.gov.sg/com/v3/token
+      - SINGPASS_PERSON_API_URL=https://sandbox.api.myinfo.gov.sg/com/v3/person
+      - SINGPASS_MYINFO_PUBLIC_CERT=./ssl/staging_myinfo_public_cert.cer
+      - SINGPASS_REDIRECT_API_URL=http://localhost:3001/callback
+      - SINGPASS_CLIENTID=STG2-MYINFO-SELF-TEST
+      - SINGPASS_CLIENTSECRET=44d953c796cccebcec9bdc826852857ab412fbe2
+      - SINGPASS_ATTRIBUTES=uinfin,name,sex
+      - doctor_service_URL=http://kong:8000/doctor/v1/
+      - patient_service_URL=http://kong:8000/patient/v1/
+      - appointment_booking_service_URL=http://kong:8000/appointment-booking/v1/
+      - appointment_service_URL=http://kong:8000/appointment/v1/
+      - analytics_service_URL=http://kong:8000/analytics/v1/
+    ports: 
+      - "3001:5001"
+
+  ####################################
+  # Admin UI frontend server
+  ####################################
+  admin-app: 
+    build: 
+      context: ./admin-app
+      dockerfile: Dockerfile
+    image: esdg2t5/admin-app:1.0
+    depends_on:
+      - kong
+      - doctor
+      - analytics
+    environment:
+      - PYTHONUNBUFFERED=1
+      - doctor_service_URL=http://kong:8000/doctor/v1/
+      - analytics_service_URL=http://kong:8000/analytics/v1/
+    ports:
+      - "3002:5001"
+
+  #==================================================================#
+  #                            MIDDLEWARES                           #
+  #==================================================================#
+  ####################################
+  # RabbitMQ: The messaging broker   
+  ####################################
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes: 
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  ####################################
+  # Kong: API Gateway
+  ####################################
+  kong:
+    build:
+      context: ./middleware/kong
+      dockerfile: Dockerfile
+    image: esdg2t5/kong_nodb:1.0
+    restart: always
+    environment:
+      KONG_DATABASE: 'off'
+      KONG_DECLARATIVE_CONFIG: /kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://kong:8000"]
+      interval: 5s
+      timeout: 2s
+      retries: 15
+    ports:
+      - "8000:8000/tcp"
+      - "8001:8001/tcp"
+      - "8443:8443/tcp"
+      - "8444:8444/tcp"
+  
+  #==================================================================#
+  #                      COMPLEX MICROSERVICES                       #
+  #==================================================================#
+  ##################################
+  # <AMQP> Appointment Booking complex microservice
+  ##################################
+  appointment-booking:
+    build:
+      context: ./services/appointment-booking
+      dockerfile: Dockerfile
+    image: esdg2t5/appointment-booking-service:1.0
+    hostname: appointment-booking
+    depends_on:
+      - rabbitmq
+      - appointment
+      - doctor
+      - patient
+      - email
+      - error-service
+    restart: always
+    environment:
+      rabbit_host: rabbitmq
+      rabbit_port: 5672
+      appointment_service_URL: http://appointment:5001
+      doctor_service_URL: http://doctor:5001
+      patient_service_URL: http://patient:5001
+      client_URL_edit_appt: http://localhost:3001/editAppointment
+      client_URL_past_appt: http://localhost:3001/viewAppointmentHistory
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5007:5001"
+
+  #==================================================================#
+  #                       SIMPLE MICROSERVICES                       #
+  #==================================================================#
+  ##################################
+  # Appointment: The Appointment microservice
+  ##################################
+  appointment:
+    build:
+      context: ./services/appointment
+      dockerfile: Dockerfile
+    image: esdg2t5/appointment-service:1.0
+    restart: always
+    environment:
+      appointment_dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/appointment 
+      appointment_service_URL: http://appointment:5001
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5001:5001"
+
+  ###################################
+  # Doctor: The Doctor microservice
+  ###################################
+  doctor:
+    build:
+      context: ./services/doctor
+      dockerfile: Dockerfile
+    image: esdg2t5/doctor-service:1.0
+    restart: always
+    environment:
+      doctor_dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/doctor 
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5002:5001"
+  
+  ##############################################
+  # Patient: The Patient microservice
+  ##############################################
+  patient:
+    build:
+      context: ./services/patient
+      dockerfile: Dockerfile
+    image: esdg2t5/patient-service:1.0
+    restart: always
+    environment:
+      patient_dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/patient 
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5003:5001"
+
+  #########################################################
+  # <AMQP> Error-Service: The Error logging microservice
+  #########################################################
+  error-service:
+    build:
+      context: ./services/error
+      dockerfile: Dockerfile
+    image: esdg2t5/error-service:1.0
+    depends_on:
+      - rabbitmq
+    restart: always
+    environment:
+      rabbit_host: rabbitmq
+      rabbit_port: 5672
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5004:5001"
+  
+  ###################################
+  # Analytics: The Analytics microservice
+  ###################################
+  analytics:
+    build:
+      context: ./services/analytics
+      dockerfile: Dockerfile
+    image: esdg2t5/analytics-service:1.0
+    restart: always
+    environment:
+      analytics_dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/analytics 
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5005:5001"
+
+  #################################################
+  # <AMQP> Email: The Email microservice
+  #################################################
+  email:
+    build:
+      context: ./services/email
+      dockerfile: Dockerfile
+    image: esdg2t5/email-service:1.0
+    restart: always
+    depends_on:
+      - rabbitmq
+    environment:
+      rabbit_host: rabbitmq
+      rabbit_port: 5672
+      SENDGRID_API_KEY: "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"
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5006:5001"
